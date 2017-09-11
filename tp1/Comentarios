@@ -1,0 +1,11 @@
+- Zona es un atributo débil porque cada población posee diferentes zonas, las
+  cuales no pueden existir si no existe una población. Además en diferentes
+  poblaciones pueden haber zonas que poseen el mismo nombre.
+- Decidimos generalizar las entidades Propietario, Vendedor y Cliente en una
+  entidad Persona ya que estas compartían varios de sus atributos.
+- Decidimos crear una entidad Características ya que varios inmuebles pueden
+  compartir las mismas características, estas se pueden describir en forma
+  general y salva escribir innecesariamente lo mismo varias veces.
+- En la relación Visita decidimos que su atributo Fecha sea clave para que se
+  pueda tener constancia de todas las visitas hechas y que vaya a realizar
+  el cliente.
