@@ -1,4 +1,4 @@
-/* Item 0) Obtener los nombres de los duenos de los inmuebles */ 
+/* Item 1 */
 
 \project_{nombre,apellido} (
 
@@ -10,3 +10,43 @@
 
 );
 
+
+
+/* Item 2 */
+
+\project_{codigo} (
+    \select_{precio >= 600000 and precio <= 700000} Inmueble
+);
+
+
+
+/* Item 3 */
+
+\project_{nombre,apellido} (
+    \rename_{cod_cliente} (
+        \project_{codigo} (
+            \rename_{cod_mirta} (
+                \project_{codigo} (
+                    \select_{nombre = "Mirta and apellido = "Gonzalez"}
+                    Persona
+                )
+            )
+        \join_{vendedor = codigo_mirta} Cliente
+        )
+    )
+    \join_{cod_cliente = codigo} Persona
+);
+
+
+
+/* Item 4 */
+
+\project_{nombre,apellido,codigo,direccion} (
+    (\project_{nombre,apellido,pob,zona} (
+        (\rename_{cod_cliente,pob,zona} Prefierezona)
+        \join_{cod_cliente = codigo}
+        Persona)
+    )
+    \join_{pob = nombre_poblacion and zona = nombre_zona}
+    Inmueble
+);
