@@ -27,11 +27,11 @@
         \project_{codigo} (
             \rename_{cod_mirta} (
                 \project_{codigo} (
-                    \select_{nombre = "Mirta and apellido = "Gonzalez"}
+                    \select_{nombre = "Mirta" and apellido = "Gonzalez"}
                     Persona
                 )
             )
-        \join_{vendedor = codigo_mirta} Cliente
+        \join_{vendedor = cod_mirta} Cliente
         )
     )
     \join_{cod_cliente = codigo} Persona
@@ -50,3 +50,34 @@
     \join_{pob = nombre_poblacion and zona = nombre_zona}
     Inmueble
 );
+
+
+/* Item 5 */
+
+\project_{nombre,apellido}
+((\select_{nombre_poblacion = "Santa Fe" and nombre_zona = "Norte"} Prefierezona)
+\join_{codigo = codigo_cliente} Persona);
+
+
+/* Item 6 */
+
+\project_{nombre,apellido}
+((\project_{vendedor}
+((\select_{nombre_poblacion = "Rosario" and nombre_zona = "Centro"} Prefierezona)
+\join_{codigo = codigo_cliente} Cliente))
+\join_{vendedor = codigo} Persona);
+
+
+/* Item 7 */
+
+\project_{nombre,apellido}
+(\project_{vendedor2} (Cliente \join_{cliente = vendedor} (\rename_{cliente,vendedor2} Cliente)) \join_{vendedor2 = codigo} Persona);
+
+
+/* Item 9 */
+
+\project_{nombre,apellido}
+(Persona \join_{codigo = codigo_cliente} (\select_{nombre_poblacion = "Rosario"} Prefierezona));
+
+
+/* Item 10 */
