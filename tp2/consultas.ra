@@ -12,72 +12,147 @@
 
 
 
+
 /* Item 2 */
 
 \project_{codigo} (
-    \select_{precio >= 600000 and precio <= 700000} Inmueble
-);
+
+\select_{precio >= 600000 and precio <= 700000} Inmueble);
+
 
 
 
 /* Item 3 */
 
+/* Nombres de los clientes */
 \project_{nombre,apellido} (
-    \rename_{cod_cliente} (
-        \project_{codigo} (
-            \rename_{cod_mirta} (
-                \project_{codigo} (
-                    \select_{nombre = "Mirta" and apellido = "Gonzalez"}
-                    Persona
-                )
-            )
-        \join_{vendedor = cod_mirta} Cliente
-        )
-    )
-    \join_{cod_cliente = codigo} Persona
-);
+Persona \join_{cod_cliente = codigo} (
+\rename_{cod_cliente} (
+
+/* Codigos de clientes de Mirta */
+\project_{codigo} (
+Cliente \join_{vendedor = cod_mirta} (
+
+/* Tabla 1x1 con el codigo de Mirta */
+\rename_{cod_mirta} (
+\project_{codigo} (
+\select_{nombre = "Mirta" and apellido = "Gonzalez"} Persona)))))));
+
 
 
 
 /* Item 4 */
 
 \project_{nombre,apellido,codigo,direccion} (
-    (\project_{nombre,apellido,pob,zona} (
-        (\rename_{cod_cliente,pob,zona} Prefierezona)
-        \join_{cod_cliente = codigo}
-        Persona)
-    )
-    \join_{pob = nombre_poblacion and zona = nombre_zona}
-    Inmueble
-);
+
+Inmueble \join_{pob = nombre_poblacion and zona = nombre_zona} (
+
+\project_{nombre,apellido,pob,zona} (
+
+Persona \join_{cod_cliente = codigo}
+
+(\rename_{cod_cliente,pob,zona} Prefierezona))));
+
+
 
 
 /* Item 5 */
 
-\project_{nombre,apellido}
-((\select_{nombre_poblacion = "Santa Fe" and nombre_zona = "Norte"} Prefierezona)
-\join_{codigo = codigo_cliente} Persona);
+\project_{nombre,apellido} (
+
+Persona \join_{codigo = codigo_cliente}
+
+(\select_{nombre_poblacion = "Santa Fe" and nombre_zona = "Norte"} Prefierezona));
+
+
 
 
 /* Item 6 */
 
-\project_{nombre,apellido}
-((\project_{vendedor}
-((\select_{nombre_poblacion = "Rosario" and nombre_zona = "Centro"} Prefierezona)
-\join_{codigo = codigo_cliente} Cliente))
-\join_{vendedor = codigo} Persona);
+\project_{nombre,apellido} (
+
+Persona \join_{vendedor = codigo} (
+
+\project_{vendedor} (
+
+Cliente \join_{codigo = codigo_cliente} (
+
+(\select_{nombre_poblacion = "Rosario" and nombre_zona = "Centro"} Prefierezona)))));
+
+
 
 
 /* Item 7 */
 
-\project_{nombre,apellido}
-(\project_{vendedor2} (Cliente \join_{cliente = vendedor} (\rename_{cliente,vendedor2} Cliente)) \join_{vendedor2 = codigo} Persona);
+\project_{nombre,apellido} (
+
+Persona \join_{vendedor2 = codigo} (
+
+\project_{vendedor2} (
+
+Cliente \join_{cliente = vendedor} (
+
+\rename_{cliente,vendedor2} Cliente))));
+
+
+
+
+/* Item 8 */
+
+\project_{cliente_nombre,cliente_apellido,cliente_telefono,
+          nombre,apellido} (
+
+Persona \join_{codigo = vendedor} (
+
+\rename_{cliente_nombre,cliente_apellido,cliente_telefono,vendedor} (
+
+\project_{nombre,apellido,telefono,vendedor} (
+
+Cliente \join_{codigo_cliente = codigo} (
+
+\project_{nombre,apellido,codigo_cliente,telefono} (
+
+Persona \join_{codigo = codigo_cliente} (
+
+\project_{codigo_cliente} (
+
+\select_{fecha_hora like "2014-11-06%"
+         or fecha_hora like "2014-11-07%"
+         or fecha_hora like "2014-11-08%"} Visitas))))))));
+
+
 
 
 /* Item 9 */
 
-\project_{nombre,apellido}
-(Persona \join_{codigo = codigo_cliente} (\select_{nombre_poblacion = "Rosario"} Prefierezona));
+\project_{nombre,apellido} (
+
+Persona \join_{codigo = codigo_cliente} (
+
+\select_{nombre_poblacion = "Rosario"} Prefierezona));
+
+
 
 
 /* Item 10 */
+
+\project_{nombre, apellido, fecha} (
+
+Persona \join_{codigo = vend} (
+
+\project_{vend, fecha} (
+
+/* Obtener pares de clientes con mismo vendedor (sin repetir) */
+((\rename_{cli, vend} Cliente)
+
+\join_{vend = vendedor and cli < codigo} Cliente)
+
+/* Pares de clientes con mismo vendedor que tienen visitas
+al mismo tiempo */
+\join_{cli = cod_cli and codigo = codigo_cliente}
+
+/* Obtener pares visitas con igual fecha y hora (sin repetir) */
+((\rename_{cod_cli, cod_inm, fecha} Visitas)
+
+\join_{fecha = fecha_hora and cod_cli < codigo_cliente} Visitas))));
+
