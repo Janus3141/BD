@@ -1,8 +1,6 @@
 
 /*Ejercicio 1 */
 
-DROP DATABASE Libreria;
-
 CREATE DATABASE Libreria;
 
 USE Libreria;
@@ -44,11 +42,16 @@ ON Autor(Apellido);
 INSERT INTO Autor(Nombre,Apellido,Nacionalidad,Residencia) VALUES ("Abelardo","Castillo","Suiza","Alpes");
 INSERT INTO Autor(Nombre,Apellido,Nacionalidad,Residencia) VALUES ("Luis","Lopez","Mexico","Mexico DF");
 
-INSERT INTO Libro VALUES (1000,"El quijote","UNR",1500);
-INSERT INTO Libro VALUES (1001,"Parry Hotter","L.A. Rowling",2000);
+INSERT INTO Libro VALUES (1000,"Libro1","UNR",1500);
+INSERT INTO Libro VALUES (1001,"Parry Hotter","Rowling",2000);
 
-INSERT INTO Escribe VALUES (1,1000,'1901-09-30');
-INSERT INTO Escribe VALUES (2,1001,'1998-05-04');
+INSERT INTO Escribe
+SELECT Autor.ID AS ID, 1000 AS ISBN, '1901-09-30' AS Año
+FROM Autor WHERE Autor.Nombre = "Abelardo" AND Autor.Apellido = "Castillo";
+
+INSERT INTO Escribe 
+SELECT Autor.ID AS ID, 1001 AS ISBN, '1998-05-04' AS Año
+FROM Autor WHERE Autor.Nombre = "Luis" AND Autor.Apellido = "Lopez";
 
 /* Ejercicio 4 */
 
@@ -63,7 +66,7 @@ END WHERE ISBN IN
 	(SELECT ISBN FROM Escribe where ID IN
 	(SELECT ID FROM Autor WHERE Nacionalidad != "Argentina"));
 
-DELETE FROM Libro WHERE ISBN IN (SELECT ISBN FROM Escribe WHERE Año > '1998-1-1' AND Año < '1998-12-31');
+DELETE FROM Libro WHERE ISBN IN (SELECT ISBN FROM Escribe WHERE Año >= '1998-1-1' AND Año <= '1998-12-31');
 
 
 
