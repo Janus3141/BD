@@ -65,8 +65,6 @@ END WHERE ISBN IN
 
 DELETE FROM Libro WHERE ISBN IN (SELECT ISBN FROM Escribe WHERE Año > '1998-1-1' AND Año < '1998-12-31');
 
-/* Ejercicio 5 */
-
 
 
 
