@@ -1,0 +1,11 @@
+R={A,B,C,D}
+
+F={A -> B, CB -> A, B -> AD};
+
+
+
+
+R = {A,B,C,D,E,F}
+
+F = {AB -> C, BD -> EF};
+
