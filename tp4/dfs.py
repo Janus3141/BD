@@ -23,35 +23,32 @@ def powerset(iterable):
     return chain.from_iterable(combinations(s,r) for r in range(1,len(s)+1))
 
 
-def reflex(alfa):
-    alfa = frozenset(alfa)
-    ps = powerset(alfa)
-    resultado = set()
-    for i in ps:
-        resultado.add((alfa,frozenset(i)))
-    return resultado
-
-def dfs(parsed):
-    resultado = parsed[1]
-    for alfa in powerset(parsed[0]):
-        resultado = resultado.union(reflex(alfa))
+def deps_closure(attrs, deps): # attrs :: Set, deps :: Set
+    # Reflexividad
+    resultado = deps
+    for alfa in powerset(attrs):
+        alfaset = frozenset(alfa)
+        ps = powerset(alfaset)
+        for subset in ps:
+            resultado.add((alfaset,frozenset(subset)))
+    # Aumentatividad
     aumento = set()
-    for (alfa,beta) in resultado:
-        flag = True
-        for gamma in powerset(parsed[0]):
-            gamma = set(gamma)
-            aumento.add((alfa.union(gamma), beta.union(gamma)))
+    while True:
+        for (alfa,beta) in resultado:
+            for gamma in powerset(attrs):
+                gamma = set(gamma)
+                aumento.add((alfa.union(gamma), beta.union(gamma)))
         if aumento.union(resultado) == resultado:
             break
         else:
             resultado = resultado.union(aumento)
+    # Transitividad
     for (alfa,beta) in resultado:
         transitivos = set()
-        for (gamma,theta) in resultado:
+        for (gamma,eta) in resultado:
             if beta == gamma:
-                transitivos.add((alfa,theta))
-                resultado = resultado.union(transitivos)
-        # resultado = resultado.union(transitivos)
+                transitivos.add((alfa,eta))
+        resultado = resultado.union(transitivos)
     return resultado
 
 
@@ -64,7 +61,7 @@ def dfs(parsed):
 # resultado := resultado ∪ c;
 # return resultado;
 
-def cierre(attrs,parsed): # attrs :: Set
+def attrs_closure(attrs,parsed): # attrs :: Set
     resultado = attrs
     agregados = attrs
     while True:
