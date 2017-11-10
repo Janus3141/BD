@@ -24,6 +24,7 @@ def powerset(iterable):
 
 
 def deps_closure(attrs, deps): # attrs :: Set, deps :: Set
+
     # Reflexividad
     resultado = deps
     for alfa in powerset(attrs):
@@ -31,6 +32,7 @@ def deps_closure(attrs, deps): # attrs :: Set, deps :: Set
         ps = powerset(alfaset)
         for subset in ps:
             resultado.add((alfaset,frozenset(subset)))
+
     # Aumentatividad
     aumento = set()
     while True:
@@ -42,13 +44,19 @@ def deps_closure(attrs, deps): # attrs :: Set, deps :: Set
             break
         else:
             resultado = resultado.union(aumento)
+
     # Transitividad
-    for (alfa,beta) in resultado:
-        transitivos = set()
-        for (gamma,eta) in resultado:
-            if beta == gamma:
-                transitivos.add((alfa,eta))
-        resultado = resultado.union(transitivos)
+    transitivos = set()
+    while True:
+        for (alfa,beta) in resultado:
+            for (gamma,eta) in resultado:
+                if beta == gamma:
+                    transitivos.add((alfa,eta))
+        if transitivos.union(resultado) == resultado:
+            break
+        else:
+            resultado = resultado.union(transitivos)
+
     return resultado
 
 
