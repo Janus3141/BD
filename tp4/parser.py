@@ -1,6 +1,4 @@
 
-import sys
-
 
 class ParseError(Exception):
     def __init__(self,value):
@@ -121,12 +119,4 @@ class Parser():
             result.append(self.parse_all_set())
         return result
 
-
-
-def main():
-    with open("test", mode='r') as thefile:
-        contents = thefile.read()
-    test = Parser(contents)
-    parsed = test.parse()
-    return parsed
 

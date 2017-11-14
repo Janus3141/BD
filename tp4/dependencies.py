@@ -14,8 +14,7 @@ def deps_closure(attrs, deps):
     resultado = deps.copy()
     for alfa in powerset(attrs):
         alfaset = frozenset(alfa)
-        ps = powerset(alfaset)
-        for subset in ps:
+        for subset in powerset(alfaset):
             resultado.add((alfaset,frozenset(subset)))
 
     # Aumentatividad
@@ -23,7 +22,7 @@ def deps_closure(attrs, deps):
     while True:
         for (alfa,beta) in resultado:
             for gamma in powerset(attrs):
-                gamma = set(gamma)
+                gamma = frozenset(gamma)
                 aumento.add((alfa.union(gamma), beta.union(gamma)))
         if aumento.union(resultado) == resultado:
             break
