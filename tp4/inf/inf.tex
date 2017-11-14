@@ -1,0 +1,185 @@
+
+\documentclass[a4paper]{report}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{float}
+\renewcommand{\baselinestretch}{1}
+\usepackage[margin=2cm]{geometry}
+\usepackage{proof}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\renewcommand{\familydefault}{\sfdefault}
+\lstset{language=Python,
+        basicstyle=\small,
+        showspaces=false,
+        showstringspaces=false}
+\pagestyle{fancy}
+\lhead{Trabajo pr\'actico 4}
+\rhead{Bruno Sotelo, Giuliano Guaragna}
+
+\setlength{\parindent}{0in}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=2cm,height=2cm]{UNR_logo.jpg}
+    \end{center}
+\end{figure}
+{\scshape\large Facultad de Ciencias Exactas, Ingenier\'ia y Agrimensura\\*
+                 Licenciatura en Ciencias de la Computaci\'on\par}
+\vspace{5cm}
+{\scshape\LARGE Teor\'ia de Bases de Datos \par}
+{\huge\bfseries Trabajo Pr\'actico 4 \par}
+\vspace{3cm}
+{\Large Sotelo, Bruno\par}
+{\Large Guaragna, Giuliano\par}
+\vfill
+{\large 14  / 11 / 2017 \par}
+\end{titlepage}
+
+\section*{Gu\'ia de uso del programa}
+\subsection*{Lenguaje}
+El programa fue implementado utilizando la versi\'on 5.2 de Python 3,
+aunque esperamos que funcione para cualquier versi\'on de Python 3.
+
+\subsection*{Formato de entrada}
+Preparamos al software para que acepte como entrada un archivo que
+contenga varios set de prueba. Cada set estar\'a separado por un
+caracter $;$, y cada uno deber\'ia definir un conjunto de atributos ($R$) 
+y un conjunto de dependencias ($F$), y opcionalmente un subconjunto de $R$
+nombrado $A$. Cada uno de estos conjuntos debe darse como:
+$$ A|F|R = \{[[elemento,] elemento]\} $$
+Los elementos de $A$ y $R$ deben ser caracteres alfab\'eticos, mientras
+un elemento de $F$ ser\'a de la forma $ C1 \to C2 $, donde $C1$ y $C2$
+son conjuntos de caracteres alfab\'eticos sin ninguna separaci\'on
+particular (aunque pueden separarse por espacios). \\
+Entre el c\'odigo entregado incluimos un archivo $test$ donde se
+encuentran todos los test propuestos para este software.
+
+\subsection*{Uso de $main.py$}
+El programa $main.py$ est\'a preparado para aceptar un archivo con sets de
+prueba desde la l\'inea de comandos. Para cada set que especifique s\'olo 
+los conjuntos $R$ y $F$ se calcular\'a el conjunto clausura de $F$
+($F^{+}$), aunque s\'olo se devuelve la cantidad de elementos de $F^{+}$,
+y las claves candidatas sobre $R$. Si el set adem\'as especifica $A$,
+se calcula su cierre $A^{+}$ y las claves candidatas de $R$.
+
+\subsection*{Funciones en $dependencies.py$}
+\begin{description}
+\item [powerset] Toma un objeto iterable y devuelve otro que contiene
+                el conjunto de partes del primero, donde cada elemento
+                es una tupla.
+\item [deps\_closure] Deber\'ia recibir como argumentos un set ($attrs$)
+                con los atributos de la relaci\'on y otro set ($deps$)
+                conteniendo tuplas que representan las dependencias
+                funcionales de la relaci\'on. Si la tupla $(A,B)$ es
+                un elemento de $deps$, entonces $B$ depende funcionalmente
+                de $A$. Ambos $A$ y $B$ deber\'ian ser de tipo
+                $frozenset$. En un principio estos ten\'ian tipo $set$,
+                pero lo descartamos por no ser objetos hasheables (por lo
+                cual no pueden ser elementos de otro $set$), mientras que
+                los $frozenset$ s\'i son hasheables por defecto y
+                mantienen casi todas las propiedades de $set$. El
+                resultado de la funci\'on ser\'a un $set$ de dependencias
+                funcionales, del mismo tipo del $set$ de dependencias de
+                la entrada, y es el conjunto clausura de $deps$.
+\item [attrs\_closure] Al igual que $deps\_closure$ toma un $set$ de
+                atributos de la relaci\'on, y un $set$ con sus
+                dependencias funcionales, con el mismo tipo que en
+                $deps\_closure$. El resultado es un $set$ de atributos
+                (caracteres), que es el conjunto de clausura de $attrs$.
+\item [keys] Calcula el conjunto de claves candidatas de la relaci\'on
+            dada. El resultado es un $set$ de $frozenset$, donde
+            cada $frozenset$ es una clave candidata. Los argumentos
+            son dados como en las funciones anteriores.
+\end{description}
+
+\subsection*{R\'apida explicaci\'on de $parser.py$}
+Para parsear los archivos como se especific\'o anteriormente,
+implementamos la clase $Parser$. Para parsear un archivo:
+\begin{itemize}
+\item Se obtienen los contenidos del archivo (datos en bruto).
+\item Se crea un objeto $Parser$ con la funci\'on $Parser$, a la cual
+    se le debe pasar los contenidos del archivo como par\'ametro.
+\item Se usa el m\'etodo $parse$ de $Parser$ para obtener una lista de
+    listas, donde cada sublista es un set de prueba dado en el archivo.
+    En cada una de estas se encuentra: en la primera posici\'on el
+    conjunto de atributos de la relaci\'on, en la segunda el conjunto de
+    dependencias funcionales, y, si se especific\'o el conjunto $A$, en
+    la tercera un subconjunto de los atributos de la primera.
+\end{itemize}
+Si ocurre alg\'un error durante el parseo del archivo, se levantar\'a
+una excepci\'on $ParseError$.
+
+
+\pagebreak
+
+
+\section*{Ejercicio 3: C\'alculo de claves candidatas}
+Observemos que por definici\'on una clave candidata es un subconjunto
+de atributos tal que su clausura es igual al conjunto de atributos y es
+m\'inima. Con esto en mente ideamos lo siguiente: tomamos un conjunto
+que ser\'a devuelto como resultado, inicialmente el conjunto vac\'io.
+Se calcula el conjunto de partes del conjunto de atributos, y se lo ordena
+de menor a mayor en cantidad de elementos de cada subconjunto. En este
+orden se calculan las clausuras de cada subconjunto, as\'i nos aseguramos
+de obtener primero los m\'inimos. Si su clausura es igual al conjunto de
+atributos, y si en el conjunto resultado no se encuentra uno de sus
+subconjuntos, entonces el subconjunto tomado es clave candidata. \\
+Inmediatamente se puede definir el siguiente pseudoc\'odigo:
+\begin{align*}
+    &resultado := \emptyset \\
+    &\textbf{for}\; ss \in \mathcal{P}(R) \\
+    &\hspace{.5cm} \textbf{if}\; ss^{+} = R \wedge \neg
+                 (\exists ss' \in resultado \wedge ss' \subset ss) \\
+    &\hspace{.5cm} \textbf{then}\; resultado := resultado \cup \{ss\} \\
+    &\textbf{return}\; resultado
+\end{align*}
+En este c\'odigo falta especificar el hecho de que el conjunto
+$\mathcal{P}(R)$ debe iterarse en orden, pero esto se soluciona
+f\'acilmente en Python. En el archivo $dependencies.py$ se encuentra
+implementado este algoritmo con el nombre de $keys$.
+
+\section*{Salida de $main.py$ para el archivo $test$}
+\begin{verbatim}
+Set 1:
+R: {'B', 'C', 'A', 'D'}
+F: {B->DA, BC->A, A->B}
+Cardinality(F+): 137
+Candidate keys: {B, C} {C, A} 
+
+Set 2:
+R: {'E', 'D', 'A', 'B', 'C', 'F'}
+F: {BD->FE, BA->C}
+Cardinality(F+): 1081
+Candidate keys: {B, D, A} 
+
+Set 3:
+R: {'I', 'E', 'H', 'G', 'D', 'A', 'B', 'J', 'C', 'F'}
+F: {H->J, A->I, DA->HG, BD->FE, BA->C}
+A: {'B', 'D'}
+A+: {'F', 'B', 'D', 'E'}
+Candidate keys: {B, D, A} 
+
+Set 4:
+R: {'E', 'H', 'G', 'D', 'A', 'B', 'C', 'F'}
+F: {E->H, D->G, H->E, A->BC, E->A, C->D}
+A: {'C', 'A'}
+A+: {'B', 'C', 'G', 'D', 'A'}
+Candidate keys: {F, E} {H, F} 
+
+Set 5:
+R: {'E', 'G', 'D', 'A', 'B', 'C', 'F'}
+F: {FG->C, A->G, A->F, E->A, D->B, B->E, C->D}
+A: {'F', 'G'}
+A+: {'B', 'C', 'E', 'G', 'F', 'D', 'A'}
+Candidate keys: {C} {E} {B} {F, G} {A} {D} 
+\end{verbatim}
+
+
+\end{document}
+

@@ -8,7 +8,7 @@ def powerset(iterable):
 
 
 
-def deps_closure(attrs, deps): # attrs :: Set, deps :: Set
+def deps_closure(attrs, deps):
 
     # Reflexividad
     resultado = deps.copy()
