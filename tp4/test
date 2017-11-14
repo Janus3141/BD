@@ -4,3 +4,14 @@ F={A -> B, CB -> A, B -> AD};
 R = {A,B,C,D,E,F}
 F = {AB -> C, BD -> EF};
 
+R = {A,B,C,D,E,F,G,H,I,J}
+F = {A->I, AB -> C, AD -> GH, BD -> EF, H -> J}
+A = {B,D};
+
+R = {A,B,C,D,E,F,G,H}
+F = {A -> BC, C -> D, D -> G, E -> A, E -> H, H -> E}
+A = {A,C};
+
+R = {A,B,C,D,E,F,G}
+F = {A -> F, A -> G, B -> E, C -> D, D -> B, E -> A, FG -> C}
+A = {F,G};
