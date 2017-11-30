@@ -1,0 +1,770 @@
+
+% Resumen de TBD
+
+
+\documentclass[a4paper]{article}
+\usepackage{amsmath}
+\renewcommand{\baselinestretch}{1}
+\renewcommand{\familydefault}{\sfdefault}
+\setlength{\parindent}{0in}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\lstset{language=SQL,
+        basicstyle=\small,
+        showspaces=false,
+        showstringspaces=false}
+
+
+
+\begin{document}
+
+\begin{centering}
+{\scshape\huge Teor\'ia de Bases de Datos \par}
+{\scshape\huge LCC, 3er año, 2017 \par}
+{\huge\bfseries Resumen de Teor\'ia \par}
+\end{centering}
+\tableofcontents{}
+
+\section{Introducción, definiciones generales}
+
+\subsection{DBMS}
+Un DBMS (\textit{Database Management System}) es una colecci\'on de datos interrelacionados
+(la base de datos) y un conjunto de programas para acceder a esos datos. Su objetivo es proporcionar
+un entorno conveniente y eficiente para extraer y almacenar informaci\'on. Est\'an diseñados para
+manejar grandes volúmenes de datos, y manejar datos implica tanto definir estructuras para el
+almacenamiento de información como proveer mecanismos para su manipulación. Además el sistema debe
+mantener la información guardada segura tanto ante inconvenientes en software o hardware
+como ante accesos no autorizados. También se busca que no haya resultados anómalos cuando la base
+de datos es compartida entre varios usuarios (control de concurrencia).
+
+\subsection{Lo que se quiere evitar}
+Antes de las bases de datos, los datos se mantenían con sistemas de procesamiento de archivos.
+En estos, los datos se guardaban en varios archivos y se necesitaban diferentes aplicaciones para
+extraer y guardar información en ellos. Esto traía varios problemas:
+\begin{description}
+    \item[Redundancia e inconsistencia]: Dado que diferentes programadores creaban los archivos y
+    los programas para manipularlos, lo más probable era encontrarse con diferentes formatos
+    entre los archivos, programas escritos con diferentes lenguajes de programación e información
+    duplicada. Además se podía perder consistencia ante fallos del sistema en medio de una
+    actualización, para solucionar esto se debe implementar atomicidad en las actualizaciones
+    de datos (es decir, una actualización o transacción se realiza por completo o no se realiza
+    para nada), algo que es complicado de introducir en los programas de aplicación.
+    \item[Dificultad para acceder a los datos]: Si una solicitud no fue prevista al diseñarse el
+    sistema original, no había programa de aplicación que la satisfagan. Se podía realizar una
+    extracción manual de datos o escribir un nuevo programa de aplicación (algo costoso en muchos
+    casos), pero ninguna es satisfactoria. Se debían desarrollar sistemas de recuperación de datos
+    para uso general.
+    \item[Aislamiento de datos]: Visto que los datos estaban repartidos en varios archivos que
+    podían tener diferentes formatos, se hacía más difícil escribir programas de aplicación.
+    \item[Anomalías de acceso concurrente]: Se puede acceder a los datos por diversos programas
+    que no han sido previamente coordinados, y su supervisión es muy difícil de proporcionar.
+    \item[Problemas de seguridad]: Puesto que los programas de aplicación se añaden al sistema
+    de forma precisa, es difícil implantar las restricciones de seguridad requeridas para
+    proteger los datos.
+\end{description}
+
+\subsection{Ventajas del enfoque de BD}
+\begin{itemize}
+    \item Es posible disminuir la redundancia.
+    \item Es posible evitar la inconsistencia.
+    \item Es posible compartir datos. Aplicaciones ya existentes pueden compartir información
+    de la BD. Se pueden desarrollar nuevas aplicaciones para trabajar con los mismos datos
+    almacenados.
+    \item Es posible hacer cumplir las normas. El administrador de la BD puede garantizar la
+    aplicación de normas para la representación de datos.
+    \item El DBA puede aplicar restricciones de seguridad, haciendo que el acceso a la BD sea
+    a través de los canales apropiados.
+    \item Es posible mantener la integridad.
+\end{itemize}
+
+\subsection{Abstracción de datos}
+Para que el sistema sea utilizable, debe recuperar la información eficientemente. Esta necesidad
+ha llevado a programadores a utilizar complejas estructuras de datos para representar los datos en
+las bases de datos. Ya que muchos usuarios de BDs no están entrenados para entender estas
+estructuras, se esconden los detalles de implementación a través de la abstracción.
+\begin{description}
+    \item[Nivel físico]: El nivel más bajo de abstracción. Describe cómo se almacenan los datos,
+    con todos los detalles de las estructuras utilizadas.
+    \item[Nivel lógico]: Describe qué datos están guardados en la base de datos y qué relaciones
+    existen entre ellos. Para ello se presenta la base de datos por completo pero en términos de
+    estructuras relativamente simples. Este es el nivel usado por los Administradores de la base
+    de datos.
+    \item[Nivel de visión]: El nivel más alto de abstracción. Describe sólo parte de la BD. El
+    sistema tal vez provea varias vistas para la misma BD. Es el nivel usado por el usuario final.
+\end{description}
+
+\subsection{Instancia y esquema}
+Las BDs pueden cambiar con el paso del tiempo por inserción o borrado de datos. La colección de
+información guardada en la base de datos en un momento en particular es llamada instancia de la
+BD. En cambio, el diseño en general de la BD, que casi nunca cambia, es llamado esquema. Los
+sistemas de BD tienen varios esquemas, particionados de acuerdo a los niveles de abstracción.
+El esquema físico describe el diseño de la BD a nivel físico, y el esquema lógico lo hace a nivel
+lógico. También puede haber subesquemas a nivel de vista que describan las diferentes vistas de
+la BD. Las aplicaciones se escriben usando el esquema lógico, y se dice que son independientes de
+los datos físicos si no dependen del esquema físico. En este caso, el esquema físico puede ser
+cambiado sin afectar a esos programas de aplicación.
+
+\subsection{Modelo de datos}
+Un modelo de datos es una colección de herramientas conceptuales para describir los datos guardados
+en la BD, las relaciones entre ellos, la semántica asociada a ellos y restricciones de consistencia.
+Podemos distinguir:
+\begin{description}
+    \item[Modelos lógicos basados en objetos]: Usados para describir datos en los niveles lógico y
+    de vistas.
+    \item[Modelos lógicos basados en registros]: Usados para describir datos en los niveles lógico
+    y físico.
+\end{description}
+
+\subsection{Administrador de BD}
+El administrador de datos (DA) es la persona que toma las decisiones estratégicas y de política con
+respecto a la información de la empresa. El DBA (Administrador de BD) es quien proporciona el apoyo
+técnico necesario para poner en práctica las decisiones del DA. Está encargado del control general
+del sistema en el nivel técnico. Entre sus funciones están:
+\begin{itemize}
+    \item La definición del esquema conceptual, a través de definiciones de DDL.
+    \item Definición del esquema interno y de la ubicación física de la BD.
+    \item Concesión de autorización para el acceso de datos.
+    \item Especificación de las restricciones de seguridad.
+    \item Definición de procedimientos de respaldo y recuperación.
+\end{itemize}
+
+
+
+\section{Modelado con Modelo Entidad-Relación}
+El modelo Entidad-Relación es un modelo basado en objetos, o sea permite describir los datos a nivel
+lógico. Emplea tres conceptos básicos: entidades, relaciones y atributos.
+
+\subsection{Entidades}
+Una entidad en un objeto o cosa que existe en el mundo real y es distinguible de otras cosas u
+objetos. Puede ser algo concreto o abstracto, y son distinguibles a partir de un conjunto de
+atributos. Por lo general, cuando hablamos de entidades en realidad estamos hablando de conjuntos
+de entidades, que comparten las mismas propiedades o atributos. Por ejemplo un conjunto de
+estudiantes de la universidad comparten el ser alumnos, y por lo tanto forman un conjunto de
+entidades.
+
+\subsection{Atributos}
+Los atributos son propiedades descriptivas que posee cada miembro de una entidad. Cada elemento de
+una entidad tendrá un valor asignado para cada uno de sus atributos. Un atributo tiene un conjunto
+de valores permitidos llamado dominio. \\
+Formalmente, un atributo es una función que mapea entidades a un dominio. Ya que una entidad puede
+poseer varios atributos, cada una puede ser descrita por un conjunto de pares (atributo,valor), un
+par por cada atributo de la entidad. \\
+Clasificaciones de los atributos:
+\begin{description}
+    \item[Simples o compuestos]: Un atributo es compuesto si puede ser dividido en subparte (una
+    dirección por ejemplo). Los atributos compuestos mejoran la granularidad de las consultas
+    al momento de usar la BD. Si el atributo no es divisible, es simple.
+    \item[Simplemente valuado o multivaluado]: El atributo es simplemente valuado si el mapeo es
+    uno a uno (mapea una entidad a un solo valor del dominio). Si el mapeo es de una entidad a
+    varios valores del dominio, el atributo es multivaluado.
+    \item[Derivado]: El valor de este atributo puede ser derivado de algún subconjunto de otros
+    atributos (incluso de diferentes entidades). Estos valores no son guardados, sino que son
+    computados cuando son requeridos.
+    \item[Nulo]: Un atributo se guarda como nulo en la BD cuando la entidad no posee un valor
+    en el dominio dado para este atributo. Puede aparecer porque simplemente no existe el valor
+    en el dominio, porque no se lo conoce, o porque fue perdido.
+\end{description}
+
+\subsection{Relaciones}
+Una relación es una asociación entre varias entidades. Puede ser definida como una relación
+matemática, es decir, si $E_{1}, E_{2}, ..., E_{n}$ son entidades, entonces una relación $R$
+es un subconjunto de
+$$ \{ (e_{1},e_{2},...,e_{n}) | e_{1} \in E_{1}, e_{2} \in E_{2}, ..., e_{n} \in E_{n} \} $$
+Entonces decimos que $(e_{1},e_{2},...,e_{n})$ es una relación entre $E_{1}, E_{2},..., E_{n}$.
+Pero en general vamos a llamar relación al conjunto de relaciones, similar a como hacemos con
+las entidades, y llamamos instancia de la relación a la tupla $(e_{1}, e_{2}, ..., e_{n})$. \\
+Una relación también puede poseer atributos descriptivos. Otro dato importante es que las
+entidades asociadas a una relación pueden no ser distintas (por ejemplo puede existir una
+relación Persona - Persona en alguna BD donde Persona es una entidad).
+
+\subsection{Cardinalidades}
+Los radios de cardinalidad expresan el n\'umero de entidades a los que una entidad puede estar
+relacionada a trav\'es de una relaci\'on. Podemos observar las cardinalidades en relaciones
+binarias, siendo algo extensible a relaciones de m\'as de dos entidades. \\
+Para una relaci\'on binaria entre entidades A y B, la cardinalidad debe ser una de las
+siguientes:
+\begin{description}
+    \item[1 a 1]: Un elemento de A se asocia a lo sumo con un elemento de B y viceversa.
+    \item[1 a n]: Un elemento de A se asocia con cualquier n\'umero de elementos de B
+    (0 o m\'as). Mientras un elemento de B se asocia con a lo sumo un elemento de A.
+    \item[n a 1]: Similar al anterior.
+    \item[n a n]: Un elemento de A se asocia con cualquier n\'umero de elementos de B,
+    0 o m\'as, y lo mismo para cada elemento de B con A.
+\end{description}
+La cardinalidad que se asocia a cada relaci\'on depende obviamente de la situaci\'on del
+mundo real que se est\'a modelando.
+
+\subsection{Participaci\'on}
+La participaci\'on de una Entidad $E$ en una relaci\'on $R$ se dice \textit{total} si cada
+elemento de $E$ participa en al menos un elemento de $R$ (una instancia de la relaci\'on).
+Si alg\'un elemento de $E$ no participa en ninguna instancia de $R$, la participaci\'on de
+$E$ en $R$ se dice \textit{parcial}.
+
+\subsection{Claves}
+Hay que especificar c\'omo los elementos de una entidad son distinguibles unos de otros.
+Conceptualmente, cada elemento es distinto, pero desde la perspectiva de la BD sus
+diferencias deben ser expresadas en t\'erminos de los atributos. \\
+Por lo tanto, los valores de los atributos de una entidad deben ser tales que puedan
+identificar de forma \'unica a cada elemento. O sea, cada par de elementos en una
+entidad no puede tener los mismo valores en todos los atributos (algo esperable porque
+estamos hablando de conjuntos). \\
+Una \textit{superclave} para una entidad es entonces un conjunto de atributos que basta para
+especificar esta diferencia entre pares de elementos de entidades. Si $K$ es una superclave,
+tambi\'en lo ser\'a cualquier superconjunto de $K$. \\
+Una \textit{clave candidata} es una superclave para la cual ning\'un subconjunto propio es
+superclave (puede haber varias en una entidad), mientras la \textit{clave primaria} es
+aquella clave candidata que elige un diseñador de BD para especificarla en el diseño de la
+BD. Si una entidad tiene clave candidata se denomina \textit{entidad fuerte}. Si no la
+tiene se denomina \textit{entidad d\'ebil}, c\'omo distinguimos en ese caso un elemento
+de otro? Las entidades d\'ebiles dependen de una entidad fuerte, llamada \textit{entidad
+propietaria}, y la entidad d\'ebil debe su existencia a ella. \\
+Entre una entidad d\'ebil y su entidad propietaria habr\'a una relaci\'on binaria llamada
+\textit{relaci\'on identificadora}, con cardinalidad n a 1 desde la d\'ebil a la fuerte,
+y no debe poseer atributos descriptivos, si se necesita uno seguramente puede ser asociado
+con la entidad d\'ebil. \\
+Aunque la entidad d\'ebil no tiene clave candidata, se necesita alguna forma de distinguir
+entre sus elementos. Fijada una entidad fuerte para la d\'ebil, llamamos
+\textit{discriminador} al conjunto de atributos de la entidad d\'ebil que permite distinguir
+entre elementos. Entonces una clave primaria de una entidad d\'ebil estar\'a formada tanto
+por la clave primaria de la entidad fuerte como por su discriminador. \\
+Para las relaciones la clave es algo m\'as complicada. Sea $R$ una relaci\'on que
+involucra a las entidades $E1, E2, ..., En$, y sea $e_{i}$ la clave primaria de la
+entidad $Ei$. Si $R$ no tiene atributos, $key(R) = e_{1} \cup e_{2} \cup ... \cup e_{n}$;
+si $R$ tiene atributos $r_{1}, r_{2}, ..., r_{m}$, $key(R) = e_{1} \cup e_{2} \cup ...
+\cup e_{n} \cup \{r_{1}, r_{2}, ..., r_{m}$. \\
+Si $R$ no tiene atributos, el conjunto $key(R)$ forma una superclave de $R$.
+Por simplicidad supongamos que $R$ es una relaci\'on binaria. Lo que sigue es extensible
+a relaciones $n$-arias.
+Si $R$ tiene cardinalidad:
+\begin{description}
+    \item[n:n]: Entonces $key(R)$ es clave primaria.
+    \item[n:1 o 1:n]: La clave primaria es un subconjunto de $key(R)$, espec\'ificamente
+    se pueden tomar s\'olo los atributos de la entidad que est\'a del lado $n$ para formar
+    la clave primaria de la relaci\'on.
+    \item[1:1]: La clave primaria es la clave primaria de alguna de las dos relaciones
+    involucradas, elegida arbitrariamente.
+\end{description}
+Si $R$ tiene atributos asociados, $key(R)$ es un (super)conjunto de superclave de $R$. O sea,
+la clave primaria se formar\'a seg\'un la cardinalidad como antes, pero se agregan uno,
+varios o todos los atributos asociados a $R$.
+
+\subsection{Diagrama entidad-relaci\'on}
+Consta de los siguientes componentes:
+\begin{description}
+    \item[Rect\'angulos]: Para representar entidades fuertes.
+    \item[Rect\'angulos dobles]: Para las entidades d\'ebiles.
+    \item[Elipses]: Para los atributos.
+    \item[Rombos]: Para representar relaciones.
+    \item[L\'ineas]: Para conectar entidades a conjuntos y relaciones. En el caso de l\'ineas
+    entre entidad y relaci\'on se indica la cardinalidad respectiva.
+    \item[Tri\'angulos]: Para especificar generalizaciones o especializaciones.
+\end{description}
+Las generalizaciones y especializaciones se indican cuando varias entidades comparten
+atributos. Para no sobredimensionar el diagrama con repeticiones de los mismo atributos
+a veces es mejor usar estas. La idea es usar una entidad para contener atributos compartidos.
+Una generalizaci\'on es una relaci\'on de inclusi\'on que existe entre una entidade de nivel
+m\'as alto y una o varias entidades de nivel m\'as bajo. Especializaci\'on es la relaci\'on
+inversa.
+
+\subsection{Reducci\'on de DER a tablas}
+Se puede convertir un esquema E-R en un esquema relacional ya que ambos son representaciones
+l\'ogicas y abstractas de una situaci\'on del mundo real. Describiremos c\'omo hacerlo. \\
+\subsubsection*{Entidades fuertes}
+Sea $E$ una entidad fuerte con atributos $a_{1},a_{2},...,a_{n}$. Convertimos esta entidad
+a una tabla en el modelo relacional (una relaci\'on) llamada $E$, y que tiene $n$ columnas.
+Cada columna corresponde a un atributo $a_{i}$, y cada fila corresponde a una entidad
+(elemento del conjunto). Podemos decir que la tabla contendr\'a un subconjunto del producto
+cartesiano $D_{1}\; x\; D_{2}\; x\; ...\; x\; D_{n}$, donde $D_{i}$ es el dominio del
+atributo $a_{i}$, observemos que esto es la definici\'on de una relaci\'on matem\'atica. \\
+Para los atributos compuestos que pueda tener la entidad, simplemente se crea una columna por
+cada miembro del atributo, no para el atributo en s\'i. Para lo dado anteriormente, cada
+atributo $a_{i}$ debe ser un atributo simple. \\
+En el caso de atributos multivaluados, no se colocan en la tabla $E$, sino que se crea una
+nueva relaci\'on (tabla) que posee una columna para el atributo multivaluado y un conjunto
+de columnas para la clave primaria de la relaci\'on que posee este atributo. Todas las
+columnas de esta nueva relaci\'on formar\'an una clave primaria.
+\subsubsection*{Entidades d\'ebiles}
+Sea $A$ una entidad d\'ebil con atributos $a_{1}, a_{2}, ..., a_{r}$ y $B$ la entidad fuerte
+de la cual depende $A$, y que tiene por clave primaria $b_{1}, b_{2}, ..., b_{s}$. La
+entidad $A$ se representar\'a con una relaci\'on (tabla) llamada $A$ con el conjunto de
+columnas $\{b_{1}, b_{2}, ..., b_{s}, a_{1}, a_{2}, ..., a_{r}$. En la tabla se deber\'ian
+indicar restricciones de clave for\'anea para los atributos $b_{1}, b_{2}, ..., b_{s}$, ya
+que hacen referencia a atributos clave en $B$.
+\subsubsection*{Relaciones}
+Sea $R$ una relaci\'on que involucra a las entidades $E_{1}, E_{2}, ..., E_{m}$, y
+supongamos que $key(R)$ consta de $n$ atributos. Representamos esta relaci\'on con una
+tabla llamada $R$ con $n$ columnas distintas, donde cada columna corresponde a un
+atributo de $key(R)$. \\
+En el caso de relaciones binarias con cardinalidad $1:n$, observemos que tendremos tres
+tablas: una por cada entidad y una para la relaci\'on. Digamos que las entidades son $A$
+y $B$, y la relaci\'on llamada $AB$ une uno o varios elementos de $A$ con a lo sumo un
+elemento de $B$ (por ser $1:n$), y adem\'as $A$ tiene una participaci\'on total en $AB$
+(cada elemento de $A$ participa en $AB$). Entonces se pueden combinar los esquemas $A$ y
+$AB$ en uno solo uniendo los atributos de los dos esquemas (no se repiten atributos). La
+clave primaria del esquema resultante ser\'a la clave primaria de $A$. \\
+Las relaciones que conectan una entidad d\'ebil con una fuerte son otro caso especial.
+Observemos que son relaciones $1:n$, no tienen atributos descriptivos y la clave primaria
+de la entidad d\'ebil incluye a la de la entidad fuerte de la cual depende. Entonces la
+tabla que se obtiene de esta relaci\'on es una tabla redundante que no necesita presentarse,
+ya que toda la informaci\'on que pueda tener est\'a incluida en la table que resulta de
+la entidad d\'ebil.
+\subsubsection*{Generalizaci\'on y especializaci\'on}
+Hay dos m\'etodos para llevar estas relaciones a tablas. El primero es crear una tabla para
+la entidad de nivel m\'as alto, y crear una tabla por cada entidad de nivel m\'as bajo que
+incluya: una columna por cada atributo de esa entidad m\'as una columna para cada atributo
+de la clave primaria de la entidad de alto nivel. \\
+El otro m\'etodo es no crear tabla para la entidad de m\'as alto nivel y crear una tabla
+para cada entidad de nivel bajo que incluya: una columna por cada atributo de esa entidad y
+una columna por cada atributo de la entidad de m\'as alto nivel (sea de la clave primaria
+o no).
+
+
+
+
+\section{Modelo Relacional}
+El modelo Relacional es un modelo de datos basado en registros, es decir, puede describir
+datos a nivel l\'ogico y f\'isico. Es una formalizaci\'on te\'orica de las bases de datos
+relacionales. \\
+Una Base de Datos Relacional (BDR) es una colecci\'on de tablas, donde cada tabla posee un
+nombre \'unico. Como vimos anteriormente, una fila de una tabla representa una relaci\'on
+entre un conjunto de valores. En el modelo relacional, a las tablas las llamamos
+\textit{relaci\'on}, a las columnas de una tabla las llamamos \textit{atributo} y a las
+filas de la tabla las llamamos \textit{tuplas}. \\
+Para cada atributo hay un conjunto de valores permitidos llamado \textit{dominio}. \\
+Una relaci\'on es un subconjunto de un producto cartesiano de una lista de $n$ dominios.
+Esto se corresponde tanto con la definici\'on matem\'atica como con la idea intuitiva de
+una tabla, por eso se usan los t\'erminos indistintamente. \\
+\textbf{Notaci\'on}:
+\begin{itemize}
+    \item Sea $t$ una tupla variable de una relaci\'on $R$, y sea $a$ un atributo
+    de $R$. Indicamos $t[a]$ al valor de $t$ en el atributo $a$.
+    \item $t \in R$ indica que $t$ es una tupla que est\'a en la tabla $R$, o
+    equivalentemente $t$ satisface la relaci\'on $R$.
+    \item Esquema de la BD es el diseño l\'ogico de la BD, es decir, la lista de
+    atributos de la relaci\'on.
+\end{itemize}
+Los conceptos de \textit{superclave}, \textit{clave candidata} y \textit{clave primaria}
+son similares, si no iguales, a los vistos en en modelo Entidad-Relaci\'on. Para agregar
+formalidad: sea $R$ el conjunto de atributos de un esquema de relaci\'on $r$; si decimos
+que $K \subset R$ es una superclave de $r$, entonces $\forall t_{1}, t_{2} \in r |
+t_{1} \neq t_{2} \Rightarrow t_{1}[K] \neq t_{2}[K] $. \\
+
+\subsection{Propiedades de las relaciones}
+\begin{itemize}
+    \item No existen tuplas repetidas por definici\'on, ya que hablamos de relaciones, que
+    son conjuntos, no tendr\'ia sentido que haya repetici\'on.
+    \item Ni las tuplas ni los atributos est\'an ordenados, tambi\'en por estar definidos
+    como conjuntos.
+    \item Todos los valores de los atributos son at\'omicos, es decir, los dominios
+    subyacentes son simples, en una intersecci\'on entre tupla y atributo no puede haber
+    una lista de valores.
+\end{itemize}
+Si una relaci\'on satisface esas condiciones, se dice que est\'a \textit{normalizada}.
+
+\subsection{DMLs}
+Los Lenguajes de Manejo de Datos (DMLs) son notaci\'on para expresar: consultas,
+actualizaci\'on, inserci\'on y borrado de datos. Es un lenguaje en el que un usuario
+solicita informaci\'on de la BD. \\
+Los lenguajes se pueden clasificar en:
+\begin{description}
+    \item[Algebr\'aicos]: Aplican operadores sobre relaciones.
+    \item[De c\'alculo]: Especifican un predicado que las tuplas deben satisfacer.
+    \item[Intermedios].
+\end{description}
+Tambi\'en se pueden clasificar como:
+\begin{description}
+    \item[Procedimentales]: El usuario da instrucciones al sistema para que realice
+    una secuencia de operaciones en la BD para calcular el resultado.
+    \item[No procedimentales]: El usuario describe la informaci\'on deseada sin dar un
+    procedimiento para obtenerla.
+\end{description}
+
+\subsection{\'Algebra Relacional}
+Es un lenguaje de consulta procedimental. Consta de un conjunto de operaciones que toman
+una o dos relaciones como entrada y producen una nueva relaci\'on como resultado. Las
+operaciones fundamentales del AR son suficiente para expresar cualquier consulta. \\
+Las operaciones fundamentales son: selecci\'on, proyecci\'on, producto cartesiano, uni\'on,
+renombre y resta. Si nos restringimos a estas operaciones algunas consultas son m\'as
+complicadas para expresar, por lo cual se definen tambi\'en operaciones adicionales:
+intersecci\'on, producto natural, divisi\'on y asignaci\'on; estas se definen en t\'erminos
+de las operaciones fundamentales, o sea que no añaden potencia al AR. \\
+Comencemos por ver las operaciones unarias (toman una sola relaci\'on como entrada).
+\subsubsection*{Selecci\'on}
+Selecciona tuplas que satisfacen un predicado dado. Se indica:
+$$ \sigma_{P}(r) $$
+Devuelve las tuplas de $r$ que satisfacen el predicado $P$.
+\subsubsection*{Proyecci\'on}
+Filtra atributos de una relaci\'on. Notamos:
+$$ \pi_{a}(r) $$
+Donde $a$ es una lista de atributos. Obtenemos la relaci\'on que posee todas las tuplas
+de $r$ pero s\'olo los atributos $a$. Obviamente se eliminan tuplas duplicadas si aparecen.
+\subsubsection*{Renombre}
+Permite renombrar relaciones para evitar ambiguedades. Lo indicamos:
+$$ \rho_{n}(r) $$
+Para obtener la relaci\'on id\'entica a $r$ excepto el nombre, que ser\'a $n$.
+Las relaciones binarias son:
+\subsubsection*{Producto cartesiano}
+Es el producto cartesiano de conjuntos. Lo indicamos:
+$$ a \times b $$
+Donde $a$ y $b$ son relaciones. Como resultado se obtiene una relaci\'on que tiene como
+atributos la uni\'on de atributos de $a$ y $b$, y como tuplas: para cada tupla $t$ en $a$,
+la concatenaci\'on de $t$ con cada tupla $u$ en $b$ (una al lado de la otra). Si hay
+$n_{1}$ tuplas en $a$ y $n_{2}$ tuplas en $b$, $a \times b$ tendr\'a $n_{1}\: n_{2}$ tuplas.
+\subsubsection*{Uni\'on}
+Es la uni\'on de conjuntos. Para aplicarla v\'alidamente a dos relaciones $a$ y $b$ se debe
+cumplir: $a$ y $b$ deben tener el mismo n\'umero de atributos, y debe haber una biyecci\'on
+$F$ entre ellos tal que para cada atributo $t$ de $a$, $Dom(t) = T \Rightarrow Dom(F(t)) = T$.
+El resultado de $a \cup b$ ser\'a una relaci\'on con esquema id\'entico al de $a$ o $b$
+(ambos), y cuyas tuplas son tuplas de $a$, de $b$ o de ambas.
+\subsubsection*{Resta}
+Es la resta de conjuntos. Para que sea v\'alido aplicarla se deben cumplir las mismas
+condiciones que dimos en la uni\'on. El resultado de $a - b$ es una relaci\'on con esquema
+igual al de $a$ (o de $b$, ambos), que posee las tuplas de $a$ que no se encuentran en $b$.
+
+\subsubsection{Definici\'on formal}
+Una expresi\'on b\'asica del \'algebra relacional consiste en:
+\begin{itemize}
+    \item Una relaci\'on de la BD.
+    \item Una relaci\'on constante
+\end{itemize}
+Una relaci\'on constante se indica listando sus tuplas entre $\{\}$. \\
+Una expresi\'on general del AR se construye de la siguiente manera: Sean $E_{1}$ y $E_{2}$
+expresiones (b\'asicas o generales) del AR; entonces las siguientes son tambi\'en expresiones
+del \'algebra relacional:
+\begin{itemize}
+    \item $E_{1} \cup E_{2}$
+    \item $E_{1} - E_{2}$
+    \item $E_{1} \times E_{2}$
+    \item $\sigma_{P}(E_{1})$, donde $P$ es un predicado sobre atributos de $E_{1}$
+    \item $\pi_{S}(E_{1})$, donde $S$ es una lista que consiste de atributos de $E_{1}$
+    \item $\rho_{x}(E_{1})$, donde $x$ es el nuevo nombre para el resultado de $E_{1}$
+\end{itemize}
+
+\subsubsection{Operaciones adicionales}
+Veamos las operaciones adicionales que se pueden agregar al AR, y c\'omo se definen en
+t\'erminos de las operaciones fundamentales.
+\begin{description}
+    \item[Intersecci\'on]: La intersecci\'on de conjuntos. Se deben cumplir las mismas
+    restricciones que se dieron para la uni\'on. El resultado de $a \cap b$ tiene el mismo
+    esquema que $a$ y $b$, y posee las tuplas que est\'an en $a$ y en $b$. Es equivalente
+    a dos restas: $a \cap b = a - (a - b)$.
+    \item[Producto natural]: Lo notamos $a |\times| b$, y equivale a realizar un producto
+    cartesiano entre $a$ y $b$, realizar una selecci\'on forzando la igualdad entre los
+    atributos comunes que puedan tener ambos y finalmente quitar las columnas repetidas.
+    Esto ya nos da una expresi\'on en t\'erminos de operaciones fundamentales: Sean $a$ y
+    $b$ dos relaciones de esquema $A$ y $B$ respectivamente,
+    $a |\times| b = \pi_{A \cup B}(\sigma_{a.X_{1} = b.X_{1}, a.X_{2} = b.X_{2}, ..., a.X_{n} =
+    b.X_{n}}(a\; x\; b)) $, donde $A \cap B = \{X_{1}, X_{2}, ..., X_{n}\}$. El esquema
+    resultante es $A \cup B$.
+    \item[Divisi\'on]: Sean los esquemas de relaci\'on $a(X_{1},...,X_{n},Y_{1},...,Y_{m})$
+    y $b(Y_{1},...,Y_{m})$. Llamamos $X$ al atributo compuesto $X_{1},...,X_{n}$ e $Y$ al
+    atributo compuesto $Y_{1},...,Y_{m}$. La divisi\'on $a / b$ es una relaci\'on con
+    esquema $X$ y cuerpo formado por todas las tuplas $x$ tales que aparece una tupla $(x,y)$
+    en $a$ para todas las tuplas $y$ de $b$. La equivalencia con operaciones fundamentales
+    es: Sean $a(A)$ y $b(B)$ con $B \subset A$, $a / b = \pi_{A-B}(a) - \pi_{A-B}((\pi_{A-B}(a)
+    \; x\; b) - a)$.
+    \item[Asignaci\'on]: Para asignar el nombre $temp$ a una expresi\'on del AR $E_{1}$
+    escribimos $temp \leftarrow E_{1}$. Ahora la variable $temp$ puede usarse en otras
+    expresiones del AR como si fuera $E_{1}$.
+\end{description}
+
+\subsubsection{Lenguaje completo}
+Un lenguaje es relacionalmente completo si es al menos tan expresivo como el \'algebra
+relacional.
+
+\subsection{C\'alculo relacional de Tuplas}
+Es un lenguaje de consulta no procedimental. Vamos a definirlo formalmente.
+\subsubsection*{Definici\'on formal}
+Una expresi\'on de CRT es de la forma
+$$ \{ t / P(t) \} $$
+Donde $t$ es una variable de tupla y $P$ es una \textit{f\'ormula}. En una f\'ormula pueden
+aparecer varias varibles de tupla. \\
+Una variable de tupla es una \textit{variable libre} si no est\'a cuantificada por un
+$\exists$ o por un $\forall$. Si est\'a cuantificada estonces se llama \textit{variable
+ligada} o \textit{acotada}. \\
+Una f\'ormula en CRT se compone de \'atomos. Un \'atomo tiene una de las siguientes formas:
+\begin{itemize}
+    \item $s \in r$, donde $s$ es una variable de tupla y $r$ es una relaci\'on (no se
+    permite el use de $\notin$).
+    \item $s[x] \theta u[y]$, donde $s$ y $u$ son variables de tupla, $x$ es un atributo
+    elemento del esquema de $s$, $y$ es un atributo del esquema de $u$, y $\theta$ es un
+    operador de comparaci\'on ($<,\leq,=,\neq,>,\geq$). Se requiere que $x$ e $y$ est\'en
+    definidos en un dominio que pueda ser comparable con $\theta$.
+    \item $s[x] \theta c$, $s$, $x$ y $\theta$ iguales que antes, $c$ es una constante en el
+    dominio del atributo $x$.
+\end{itemize}
+Las f\'ormulas se construyen a partir de \'atomos usando las siguiente reglas:
+\begin{itemize}
+    \item Un \'atomo es una f\'ormula.
+    \item Si $P_{1}$ es una f\'ormula, entonces $\not P_{1}$ y $(P_{1})$ tambi\'en son
+    f\'ormulas.
+    \item Si $P_{1}$ y $P_{2}$ son f\'ormulas, entonces tambi\'en lo son $P_{1} \lor P_{2}$,
+    $P_{1} \land P_{2}$ y $P_{1} \Rightarrow P_{2}$.
+    \item Si $P_{1}(s)$ es una f\'ormula que contiene una variable de tupla libre $s$, y
+    $r$ es una relaci\'on, entonces $\exists s \in r (P_{1}(s))$ y $\forall s \in r (P_{1}(s))$.
+    tambi\'en son f\'ormulas. 
+\end{itemize}
+\subsubsection*{Expresiones equivalentes}
+Como en el caso de AR, es posible escribir equivalencias entre expresiones para minimizar el
+conjunto de las operaciones definidas. Por ejemplo:
+\begin{itemize}
+    \item $P_{1} \land P_{2}$ es equivalente a $\not (\not P_{1} \lor \not P_{2})$.
+    \item $\forall t \in r(P_{1}(t))$ es equivalente a $\not \exists t \in r(\not P_{1}(t))$.
+    \item $P_{1} \Rightarrow P_{2}$ es equivalente a $\not (P_{1}) \lor P_{2}$.
+\end{itemize}
+\subsubsection*{Seguridad}
+Un problema a tener en cuenta con el c\'alculo de tuplas es que algunas expresiones pueden
+generar relaciones infinitas. Por ejemplo $\{ t | \not (t \in estudiantes) \}$. Hay infinitas
+tuplas que no est\'an en la relaci\'on $estudiante$, la mayor\'ia conteniendo valores que ni
+siquiera aparecer\'an en la BD donde $estudiante$ est\'a definido. Para subsanar el problema
+se incluye el concepto de dominio de una f\'ormula. El dominio de una f\'ormula $P$ es el
+conjunto de todos los valores que aparecen expl\'icitamente en $P$ o que aparecen en una o m\'as
+relaciones cuyos nombres aparecen en $P$. Luego, una expresi\'on $\{ t | P(t) \}$ es segura si
+todos los valores que aparecen en el resultado son valores de $dom(P)$. Acorde a esto, la
+expresi\'on dada como ejemplo, $\{ t | \not (t \in estudiantes) \}$, no es segura.
+\subsubsection*{Poder expresivo}
+El CRT restringido a expresiones seguras es equivalente en poder expresivo al AR. Para cada
+expresi\'on en AR, existe una expresi\'on que devuelve el mismo resultado en CRT, y viceversa.
+
+
+
+
+
+\section{Structured Query Language}
+\subsection{Introducci\'on}
+SQL es un lenguaje para manipulaci\'on de datos que consta de dos partes:
+\begin{description}
+    \item[DDL]: Data Definition Language, provee comandos para definir, borrar y modificar
+    los esquemas de relaci\'on.
+    \item[DML]: Data Manipulation Language, provee la habilidad de consultar la informaci\'on
+    de la base de datos e insertar, borrar y modificar tuplas.
+\end{description}
+\subsection{Definici\'on de datos}
+El conjunto de relaciones en una base de datos debe ser especificado al sistema a trav\'es del
+DDL. El DDL de SQL da la posibilidad no s\'olo de especificar relaciones, sino tambi\'en
+informaci\'on para cada esquema, incluyendo:
+\begin{itemize}
+    \item Los tipos de los valores asociados a cada atributo.
+    \item Las restricciones de integridad.
+    \item El conjunto de indices a ser mantenidos para cada relaci\'on.
+    \item Seguridad y autorizaciones para cada relaci\'on.
+    \item La esctructura f\'isica para el almacenamiento f\'isico en disco.
+\end{itemize}
+Para definir una relaci\'on en SQL usamos el comando create table, su forma general es:
+\begin{lstlisting}
+    create table r (A1 D1,
+                    A2 D2,
+                    ...,
+                    An Dn,
+                    [restriccion-integridad-1],
+                    ...,
+                    [restriccion-integridad-2]);
+\end{lstlisting}
+Donde $r$ es el nombre de la relaci\'on, cada $Ai$ es el nombre de un atributo en el esquema 
+de $r$, y $Di$ especifica el tipo del atributo $Ai$. Opcionalmente se pueden agregar
+restricciones para integridad al final del comando. Algunas restricciones tambi\'en se pueden
+agregar sobre cada atributo cuando este se define. Unas restricciones pueden ser:
+\begin{itemize}
+    \item $primary\; key\; (attr_set)$, donde $attr_set$ es un conjunto de atributos que ser\'a
+    asignado como clave primaria de la relaci\'on.
+    \item $foreign\; key\; (attr_set)\; references\; s$ especifica al conjunto $attr_set$ como
+    clave foránea, y $s$ es la relaci\'on donde se encuentran los atributos a los cuales se
+    hace referencia.
+    \item $not\; null$ especifica que el atributo al cual se le agrega esta restricci\'on no
+    soporta el valor nulo.
+\end{itemize}
+SQL prohibirá cualquier actualización de la base de datos que no cumpla con las restricciones
+dadas. \\
+También podemos borrar tablas creadas con el comando drop table:
+\begin{lstlisting}
+    drop table r;
+\end{lstlisting}
+Borra la descripción de la tabla del catálogo y todas las tuplas que posea. \\
+El comando alter table permite modificar la estructura de una relación:
+\begin{lstlisting}
+    alter table r
+        { add (column type [before column2], ...)
+        | drop (column, ...)
+        | modify (column type, ...) }
+\end{lstlisting}
+\subsubsection*{Índices}
+Un índice de un atributo en una relación es una estructura de datos que permite al sistema ser
+más eficiente ante una consulta donde el atributo en cuestión tiene un valor específico,
+y lo logra restringiendo la búsqueda de tuplas (no buscará en tuplas que no tiene el valor
+especificado en el atributo dado). El índice puede ser creado sobre una lista de atributos de
+la relación. La mayoría de los motores de SQL soportan la creación de índices con el comando
+create index:
+\begin{lstlisting}
+    create [unique] index nombre_indice on nombre_tabla (columna1 [, columna2 [, ...]]) [cluster]
+\end{lstlisting}
+La opción unique puede indicarse para no permitir que dos registros de la tabla indizada tengan
+el mismo valor al mismo tiempo en el campo o combinación de campos de indización. \\
+Para borrar un índice se usa el comando drop index.
+
+\subsection{Manipulación de datos}
+Para consultar y/o modificar la base de datos, los sistemas SQL ofrecen varios comandos, los
+principales son: select, update, delete e insert.\\
+El comando select permite realizar consulta de datos, y su sintaxis (aproximada) es:
+\begin{lstlisting}
+    select [distinct] atributo1, atributo2, ...
+    from tabla1, tabla2, ...
+    [where condicion1, condicion2, ...]
+    [group by atributo1, atributo2, ...]
+    [having condicion1, condicion2, ...]
+    [order by atributo1, atributo2, ...]
+\end{lstlisting}
+Esto es una aproximación incompleta. Entre otros agregados están: join, as, in, exists, union,
+etc. Aunque esto también depende del motor de SQL con el que se esté trabajando. \\
+Si se desean actualizar datos en la BD se utiliza el comando update, cuya sintaxis (también
+aproximada) es:
+\begin{lstlisting}
+    update tabla set atributo1 = expresion1 [, atributo2 = expresion2 [,...]]
+    [where condicion1, condicion2, ...];
+\end{lstlisting}
+Si no se incluyen condiciones con when, todas las tuplas de la relación serán modificadas.\\
+Para borrar datos de la BD se usa el comando
+\begin{lstlisting} delete from tabla [where condicion1, condicion2, ...]; \end{lstlisting}
+Finalmente presentamos el comando insert que permite insertar tuplas en una BD:
+\begin{lstlisting}
+    insert into tabla (atributo1, atributo2, ...)
+    values (valor1, valor2, ...) | subconsulta;
+\end{lstlisting}
+
+
+
+
+\section{Integridad}
+Las restricciones de integridad proporcionan un medio de asegurar que los cambios que se hacen
+a la BD por parte de usuarios autorizados no resultan en pérdida de consistencia de datos. \\
+Integridad se refiere a la corrección de la información contenida en la BD. Una restricción
+podría ser simplemente un predicado arbitrario sobre la BD que un programa puede testear; pero
+esto puede ser muy costoso. Es por ello que la mayoría de los sistemas de BD permiten al
+administrador especificar restricciones que serán verificadas por el sistema. \\
+Cuando especificamos el lenguaje SQL, vimos que en DDL se pueden especificar algunas restricciones
+para entidades en los comandos create table, alter table y create index, para cada atributo se
+puede especificar: not null, unique y check(P), donde P es un predicado (check puede ser
+especificado en los comandos create y alter table). \\
+Otras restricciones de integridad que podemos utilizar son las de dominio: a cada atributo en una
+relación se lo define en un dominio, los límites de dominio son la forma más elemental de
+restricción, y son fáciles de probar por el sistema cuando se introducen nuevos datos a la BD. \\
+Las otras herramientas de integridad m\'as importantes son las claves primaria y for\'anea.
+Ning\'un componente de la clave primaria de una relaci\'on puede aceptar el valor nulo. Las
+entidades en el mundo real son distinguibles, y las claves primarias hacen posible esta
+identificaci\'on \'unica en el modelo relacional. Una entidad sin identidad (con valor
+desconocido) es una contradicci\'on. \\
+Por otro lado, las claves for\'aneas nos aseguran que un valor que aparece en una relaci\'on
+tambi\'en aparece en otra relaci\'on, algo que llamamos integridad referencial. Formalmente:
+Sean $r_{1}$ y $r_{2}$ relaciones cuyos conjuntos de atributos son $R_{1}$ y $R_{2}$
+respectivamente, y sus claves primarias son $K_{1}$ y $K_{2}$; decimos que un subcto. $\alpha$
+de $R_{2}$ es una clave for\'anea que referencia a $K_{1}$ en $r_{1}$ si requerimos que,
+para cada tupla $t_{2}$ en $r_{2}$, tiene que haber una tupla $t_{1}$ en $r_{1}$ tal que
+$t_{1}.K_{1} = t_{2}.\alpha$. Notemos que $r_{1}$ y $r_{2}$ pueden no ser distintos. Otra
+forma de presentar la integridad referencial es: La BD no debe contener un valor no nulo de
+clave ajena para el cual no exista un valor concordante de la clave primaria en la relaci\'on
+objetivo pertinente. La clave ajena puede contener valores nulos, y estos cumplen la regla
+de integridad referencial aunque no haya valores nulos en la clave primaria objetivo.\\
+\textit{Observaci\'on}: Una clave for\'anea dada y la clave primaria correspondiente deben
+definirse sobre el mismo dominio. \\
+Para cada clave ajena, el diseñador debe responderse 3 preguntas:
+\begin{enumerate}
+    \item Puede aceptar nulos esa clave ajena? Aunque se dijo que la clave for\'anea puede
+    aceptarlos sin violar la integridad, en algunas BD no tendr\'ia sentido que esto pase.
+    Esta respuesta depende de las pol\'iticas vigentes del mundo real representado.
+    \item Qu\'e deber\'a suceder si hay un intento de eliminar el objetivo de una referencia
+    de clave ajena?
+    \item Qu\'e deber\'a suceder si hay un intento de modificar la clave primaria del
+    objetivo de una referencia de clave for\'anea?
+\end{enumerate}
+En SQL se puede especificar cu\'al debe ser la respuesta para cada pregunta mediante algunas
+opciones que provee el comando create table. Para (1) podemos usar la opci\'on not null,
+que ya hemos visto, si deseamos que la clave no acepte nulos; de lo contrario simplemente
+no ponemos nada (comportamiento por defecto). Para (2) y (3) existen opciones que podemos
+usar a la hora de declarar una clave for\'anea en un create table (o tambi\'en en alter
+table), con una sintaxis como esta:
+\begin{lstlisting}
+    foreign key (attrs) references objetivo
+        on delete efecto1
+        on update efecto2
+\end{lstlisting}
+Aqu\'i estamos diciendo que el conjunto $attrs$ de atributos ya definidos es una clave
+for\'anea, que hace referencia a la clave primaria de la tabla $objetivo$, y ante el
+borrado o actualizaci\'on de una tupla en la tabla $objetivo$ que manten\'ia integridad
+referencial con esta clave for\'anea queremos que suceda $efecto1$ o $efecto2$
+respectivamente. Estos efectos pueden ser:
+\begin{description}
+    \item[restricted] indicando que el borrado o actualizaci\'on no son v\'alidos si hay
+    una tupla en la clave for\'anea que la necesita para mantener integridad referencial.
+    El comando que usamos para borrar o actualizar la tupla ser\'an rechazados por el 
+    sistema.
+    \item[cascade] con el cual la operaci\'on realizada se propaga. Si borramos una
+    tupla en $objetivo$, y hay una tupla donde los atributos de clave for\'anea
+    hacen referencia a esta, esta \'ultima tupla tambi\'en ser\'a borrada. Si
+    la operaci\'on es una actualizaci\'on, las claves for\'aneas que hacen referencia
+    a la clave actualizada ser\'an actualizadas de igual manera.
+    \item[nullifies] que pone valores nulos en la clave for\'anea si se borra o
+    actualiza la clave primaria referenciada. Este efecto ser\'a aceptado s\'olo si
+    indicamos que la clave for\'anea puede aceptar nulos.
+\end{description}
+
+
+
+
+
+\section{Cat\'alogo}
+El cat\'alogo es una BD del sistema que contiene informaci\'on acerca de los objetos
+de inter\'es para el sistema. En el cat\'alogo podemos encontrar:
+\begin{itemize}
+    \item Nombres de las relaciones.
+    \item Nombres y dominios para cada atributo en una relaci\'on.
+    \item Nombres y definiciones de las vistas creadas.
+    \item Restricciones de integridad (claves por ejemplo).
+    \item Nombres y otros datos de los usuarios autorizados.
+    \item Informaci\'on de autenticaci\'on para los usuarios.
+    \item N\'umero de tuplas en cada relaci\'on.
+    \item Informaci\'on sobre \'indices.
+\end{itemize}
+El cat\'alogo de una BD est\'a formado por tablas din\'amicas, que son mantenidas
+por el DBMS. Toda tabla en una BD tiene un dueño; en el caso de las tablas del
+cat\'alogo, el dueño es SYSTEM. Para cada comando invocado por un usuario, el DBMS
+leer\'a primero estas tablas para conocer los privilegios del usuario y decidir
+si acepta o no la solicitud, y si es aceptada puede usar nuevamente las tablas
+para tratar de optimizar el comando. \\
+Aunque var\'ia entre los sistemas, un ejemplo de tablas de un cat\'alogo es:
+\begin{description}
+    \item[SYSTABLES] Contiene una fila por cada tabla del sistema (tabla base o
+    vista). Proporciona nombre de la tabla, dueño, cantidad de columnas, etc.
+    \item[SYSCOLUMNS] Tiene una fila por cada columna de cada tabla mencionada
+    en SYSTABLES. Indica nombre de la columna, nombre de la tabla a la que
+    pertenece, tipo de datos, etc.
+    \item[SYSINDEXES] Posee una fila por cada \'indice en el sistema. Proporciona
+    el nombre del \'indice, nombre de la tabla indizada, creador, etc.
+    \item[SYSUSER] Guarda una fila por usuario en el sistema, con el nombre del
+    usuario, clave de acceso, nivel de privilegio, etc.
+    \item[SYSABAUTH] Con informaci\'on sobre privilegios de acceso a nivel tabla.
+    Indica al beneficiario del privilegio, nombre de la tabla, c\'odigo de
+    privilegio, etc.
+    \item[SYSCOLAUTH] Tiene una fila por cada privilegio columna atribuido a un
+    usuario. Proporciona propietario de la tabla, beneficiario del privilegio,
+    nombre de la columna y tabla, etc.
+    \item[SYSVIEWS] Contiene sentencias de definici\'on de vistas.
+    \item[SYSSYNONYMS] Provee la lista de sin\'onimos creados por los usuarios.
+\end{description}
+Al ser tablas en la BD, se pueden consular como cualquier otra mediante select.
+As\'i un usuario no familiarizado puede ver su estructura consultando el
+cat\'alogo. Sin embargo, estas tablas no pueden ser actualizadas mediante
+update, select o insert, ya que correr\'ia riesgo la integridad del sistema,
+por lo cual cualquiera de estos comandos usados en estas tablas son rechazados.
+La forma natural de actualizar estas tablas es usando comandos como create
+table, create index, etc.
+
+
+
+
+
+
+\section{Optimizaci\'on}
+
+
+
+\end{document}
+
